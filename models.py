@@ -17,7 +17,9 @@ class JSONModel:
 
 
 class Task(JSONModel):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        for k, v in kwargs:
+            setattr(self, k, v)
         super().__init__()
 
     def edit(self):
