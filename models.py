@@ -10,13 +10,17 @@ class JSONModel:
         except FileNotFoundError:
             self.data = []
 
+    def add(self, record):
+        self.data.append(record)
+        with open(self.json_file, 'w') as data_file:
+            json.dump(self.data, data_file)
+
 
 class Task(JSONModel):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        for k, v in kwargs:
+            setattr(self, k, v)
         super().__init__()
-
-    def add(self):
-        pass
 
     def edit(self):
         pass
