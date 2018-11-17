@@ -2,12 +2,12 @@ import json
 
 
 class JSONModel:
-    def __init__(self, json_file):
+    def __init__(self, json_file="scratch.json"):
         self.json_file = json_file
         try:
-            with open(json_file, 'r') as data_file:
+            with open(self.json_file, 'r') as data_file:
                 self.data = json.load(data_file)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             self.data = []
 
 
@@ -15,8 +15,10 @@ class Task(JSONModel):
     def __init__(self):
         super().__init__()
 
-    def add(self):
-        pass
+    def add(self, task):
+        self.data.append(task)
+        with open(self.json_file, 'w') as data_file:
+            json.dump(self.data, data_file)
 
     def edit(self):
         pass

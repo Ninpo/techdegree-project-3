@@ -1,3 +1,6 @@
+from controllers import add_new_task, Search, Modify
+
+
 class View:
     def __init__(self, layout, options, prompt, back=None):
         self._layout = layout
@@ -18,6 +21,10 @@ class View:
     def render_layout(self):
         return self._layout.format(*sorted(self._options.keys()))
 
+    def present_view(self):
+        print(self.render_layout())
+        self.handle_choice(input(self.prompt).lower())
+
     def go_back(self):
         return self.back
 
@@ -37,13 +44,32 @@ class MainView(View):
         super().__init__(self._layout, self._options, self.prompt)
 
     def add_new(self):
-        print("Add New")
+        add_new_task()
 
     def search_existing(self):
-        return SearchView(self)
+        Search()
 
     def quit(self):
         return False
+
+
+class NewTaskView(View):
+    def __init__(self):
+        self._layout = """NEW TASK
+        """
+
+    def present_view(self):
+        print(self._layout)
+        task = {
+            'date': input("Enter date (DD/MM/YYYY): "),
+            'title': input("Task Title: "),
+            'time_spent': input("Time spent (rounded minutes): "),
+            'notes': input("Notes (Optional): ")
+        }
+        add_new_task(task)
+        input("The entry has been added.  Press Enter to continue")
+        return MainView().present_view()
+
 
 
 class SearchView(View):
@@ -67,18 +93,20 @@ class SearchView(View):
 
     def exact_date(self):
         print("Exact Date Search")
-        date_string = input("Enter a date in the format DD/MM/YY> ")
-        test_data = [{'date': date_string, 'title': "A Title", 'time_spent': 104, 'notes': "This is a note"}]
-        return ResultView(test_data, self)
+        date_string = input("Enter a date in the format DD/MM/YYYY> ")
+        Search.date_search(date_string)
 
     def date_range(self):
-        print("Date range search")
+        start_date = input("Enter a start date in the format DD/MM/YYYY> ")
+        end_date = input("Enter an end date in the format DD/MM/YYYY> ")
+        Search.date_search(start_date, end_date)
 
     def exact_match(self):
-        print("Exact Match Search")
+        text_to_match = input("Enter the text to search for> ")
+        Search.text_search(text_to_match)
 
     def regex_pattern(self):
-        print("Regex pattern search")
+        regex_to_match = input("Enter the regex pattern you'd like to use> ")
 
 
 class ResultView(View):
