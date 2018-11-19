@@ -1,4 +1,4 @@
-from controllers import add_new_task, Search, Modify
+import controllers
 
 
 class View:
@@ -44,10 +44,10 @@ class MainView(View):
         super().__init__(self._layout, self._options, self.prompt)
 
     def add_new(self):
-        add_new_task()
+        controllers.TaskController().add_new_task()
 
     def search_existing(self):
-        Search()
+        return SearchView().present_view()
 
     def quit(self):
         return False
@@ -66,10 +66,9 @@ class NewTaskView(View):
             'time_spent': input("Time spent (rounded minutes): "),
             'notes': input("Notes (Optional): ")
         }
-        add_new_task(task)
-        input("The entry has been added.  Press Enter to continue")
-        return MainView().present_view()
-
+        if controllers.TaskController().add_new_task(task):
+            input("The entry has been added.  Press Enter to continue")
+            return MainView().present_view()
 
 
 class SearchView(View):
@@ -94,19 +93,20 @@ class SearchView(View):
     def exact_date(self):
         print("Exact Date Search")
         date_string = input("Enter a date in the format DD/MM/YYYY> ")
-        Search.date_search(date_string)
+        controllers.TaskController().date_search(date_string)
 
     def date_range(self):
         start_date = input("Enter a start date in the format DD/MM/YYYY> ")
         end_date = input("Enter an end date in the format DD/MM/YYYY> ")
-        Search.date_search(start_date, end_date)
+        controllers.TaskController().date_search(start_date, end_date)
 
     def exact_match(self):
         text_to_match = input("Enter the text to search for> ")
-        Search.text_search(text_to_match)
+        controllers.TaskController().text_search(text_to_match)
 
     def regex_pattern(self):
         regex_to_match = input("Enter the regex pattern you'd like to use> ")
+        controllers.TaskController().text_search(regex_to_match, regex=True)
 
 
 class ResultView(View):
@@ -114,12 +114,14 @@ class ResultView(View):
         self.back = back
         self.result = result
         self._layout = """RESULT
-        Date: {date}
-        Title: {title}
-        Time Spent: {time_spent}
-        Notes: {notes}
+        Date: {2.date:%d/%m/%Y}
+        Title: {2.title}
+        Time Spent: {2.time_spent}
+        Notes: {2.notes}
         
-        Result {} of {}"""
+        Result {0} of {1}"""
+        self.page = 0
+        self.paged_view = False
 
         self._options = {'n': self.next_item,
                          'p': self.prev_item,
@@ -127,26 +129,42 @@ class ResultView(View):
                          'd': self.delete_item,
                          'r': self.go_back}
 
-        if len(result) > 1:
+        if len(self.result) > 1:
+            self.paged_view = True
             self.prompt = "[N]ext, [P]revious, [E]dit, [D]elete, [R]eturn to search menu> "
         else:
             self.prompt = "[E]dit, [D]elete, [R]eturn to search menu> "
         super().__init__(self._layout, self._options, self.prompt, self.back)
 
-    def render_layout(self):
-        return self._layout.format("1", "1", **self.result[0])
+    def present_view(self):
+        print(self.render_layout(self.page, self.result[self.page]))
+        self.handle_choice(input(self.prompt).lower())
+
+    def render_layout(self, page, task):
+        return self._layout.format(page+1, len(self.result), task)
 
     def next_item(self):
-        pass
+        if self.page + 1 > len(self.result) - 1:
+            self.page = 0
+        else:
+            self.page += 1
+        return self.present_view()
 
     def prev_item(self):
-        pass
+        if self.page - 1 < 0:
+            self.page = len(self.result) - 1
+        else:
+            self.page -= 1
+        return self.present_view()
 
     def edit_item(self):
         return EditView(self.result[0], self)
 
     def delete_item(self):
         pass
+
+    def go_back(self):
+        return SearchView().present_view()
 
 
 class EditView(View):
