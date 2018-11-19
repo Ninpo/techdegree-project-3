@@ -1,34 +1,41 @@
+from marshmallow.exceptions import ValidationError
+import pendulum
 import models
 import views
-import pendulum
 
 
-def validate_new_task(task):
-    pass
+class TaskController:
+    def __init__(self):
+        self.data_store = models.JSONStore()
 
-
-def add_new_task(task=None):
-    if task:
-        validate_new_task(task)
-        create_task = models.Task()
-        create_task.add(task)
-    else:
+    def add_new_task(self, task=None):
+        if task:
+            try:
+                new_task = models.TaskSchema().load(task)
+            except ValidationError as err:
+                print(err)
+                return views.NewTaskView().present_view()
+            else:
+                models.TaskSchema().dump(new_task)
+                return True
         return views.NewTaskView().present_view()
 
-
-class Search:
-    def __init__(self):
-        pass
-
     def date_search(self, date, end_date=None):
-        pass
+        tasks = models.TaskSchema().load(self.data_store.data, many=True)
+        date_stamp = pendulum.from_format(date, "DD/MM/YYYY").timestamp()
+        if not end_date:
+            result = [
+                task
+                for task in tasks
+                if task.date.timestamp()
+                == date_stamp
+            ]
+        else:
+            end_date_stamp = pendulum.from_format(end_date, "DD/MM/YYYY").timestamp()
+            result = [task for task in tasks if date_stamp <= task.date.timestamp() <= end_date_stamp]
+        return views.ResultView(result).present_view()
 
     def text_search(self, match_text, regex=False):
-        pass
-
-
-class Modify:
-    def __init__(self):
         pass
 
     def edit_task(self, task):
