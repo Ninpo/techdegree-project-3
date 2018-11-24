@@ -5,11 +5,31 @@ import views
 
 
 class TaskController:
+    """Logic connecting views, user input and Task data.
+
+    Args:
+        data_repo (:obj:`DataRepo`): Collection of data bindings.
+
+    Attributes:
+        tasks (:obj:`list` of :obj:`Task`): Current set of Task objects.
+    """
+
     def __init__(self, data_repo):
         self.data_repo = data_repo
         self.tasks = self.data_repo.get_records()
 
     def render_view(self, view, confirmation=False, error=None):
+        """Call current view's print to screen method, passing in any confirmation or error messages.
+
+        Args:
+            view (:obj:`View`): Currently selected view.
+            confirmation (bool): Confirmation signal for task actions.
+            error (:obj:): Any error string, exception or dict returned from task actions.
+
+        Returns:
+            present_view (:obj:`method`): Print view to screen and get user input.
+
+        """
         if confirmation:
             return view.present_view(confirmation=confirmation)
         if error:
@@ -17,6 +37,8 @@ class TaskController:
         return view.present_view()
 
     def start(self):
+        """Present app root view and bind options to methods.
+        """
         index_choices = {
             "a": self.add_new_task,
             "b": self.search_existing,
@@ -27,6 +49,11 @@ class TaskController:
         index_choices[user_choice]()
 
     def add_new_task(self):
+        """Create a new task from user input.
+
+        Returns:
+            start (:obj:`method`): Redirect to main root view.
+        """
         new_task_view = views.NewTaskView()
         new_task_success = False
         view_options = None
@@ -47,6 +74,10 @@ class TaskController:
                 return self.start()
 
     def search_existing(self):
+        """Present list of search methods and handle choice.
+
+        Collects search results and presents calls to handle_search_results.
+        """
         search_methods = {
             "a": self.date_search,
             "b": self.date_range_search,
@@ -71,11 +102,19 @@ class TaskController:
         self.search_existing()
 
     def handle_search_results(self, search_result):
+        """Present search results to user, process edit/delete requests.
+
+        Args:
+            search_result (:obj:`list` of :obj:`Task`): Tasks matching search parameters.
+
+        Returns:
+            (bool): True/False switch to stay in edit mode or return to search results.
+        """
         result_choices = {"e": self.edit_task, "d": self.delete_task}
         result_view = views.ResultView(search_result)
         result_action, task = self.render_view(result_view)
         if not result_action:
-            return
+            return False
         edit_confirmed = False
         action_result = result_choices[result_action](task)
         while not edit_confirmed:
@@ -86,13 +125,23 @@ class TaskController:
                     action_result["task"], action_result["error"]
                 )
                 continue
-            elif action_result in ("back"):
+            elif action_result in "back":
                 return True
             else:
                 edit_confirmed = True
         return edit_confirmed
 
     def date_search(self, view):
+        """Present view for date search parameter input.
+
+        Args:
+            view (:obj:`View`): View instance
+
+        Returns:
+            result (:obj:`list` of :obj:`Task`): Task objects matching search criteria
+            None: If negative search result.
+
+        """
         date = view.exact_date()
         try:
             date_stamp = pendulum.from_format(date, "DD/MM/YYYY").timestamp()
@@ -105,6 +154,18 @@ class TaskController:
         return None
 
     def date_range_search(self, view):
+        """Present view for date range search parameters.
+
+        Args:
+            view (:obj:`View`): View instance
+
+        Returns:
+            result (:obj:`list` of :obj:`Task`): Task objects matching search criteria
+            None: If negative search result.
+
+        Raises:
+            ValueError: Raised if nonsensical date range is passed.
+        """
         start_date, end_date = view.date_range()
         try:
             start_date_stamp = pendulum.from_format(
@@ -126,6 +187,15 @@ class TaskController:
         return None
 
     def text_search(self, view):
+        """Present view for text search string input.
+
+        Args:
+            view (:obj:`View`): View instance
+
+        Returns:
+            result (:obj:`list` of :obj:`Task`): Task objects matching search criteria
+            None: If negative search result.
+        """
         match_text = view.exact_match()
         result = [
             task
@@ -139,6 +209,15 @@ class TaskController:
         return None
 
     def regex_search(self, view):
+        """Present view for regex string input.
+
+        Args:
+            view (:obj:`View`): View instance
+
+        Returns:
+            result (:obj:`list` of :obj:`Task`): Task objects matching search criteria
+            None: If negative search result.
+        """
         regex_pattern = view.regex_pattern()
         try:
             pattern_match = re.compile(regex_pattern, re.IGNORECASE)
@@ -160,6 +239,16 @@ class TaskController:
         return None
 
     def edit_task(self, task, error=None):
+        """Calls EditView and affects changes requested by user.
+
+        Args:
+            task (:obj:`Task`): Task object to edit
+            error: Any error details from a failed edit
+
+        Returns:
+            "back" (str): String literal to indicate user is finished editing.
+
+        """
         edit_view = views.EditView(task)
         task_changes = self.render_view(edit_view, error=error)
         while task_changes:
@@ -180,6 +269,14 @@ class TaskController:
         return "back"
 
     def delete_task(self, task):
+        """Deletes specified task from system.
+
+        Args:
+            task (:obj:`Task`): Task to delete
+
+        Returns:
+              False when record no longer exists.
+        """
         for idx, cur_task in enumerate(self.tasks):
             if cur_task is task:
                 del self.tasks[idx]
@@ -188,4 +285,5 @@ class TaskController:
         return False
 
     def quit(self):
+        """Exit app"""
         exit()
