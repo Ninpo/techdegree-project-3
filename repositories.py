@@ -7,6 +7,8 @@ class DataRepo:
         self.data_schema = TaskSchema()
 
     def get_records(self):
+        if len(self.json_source.data) == 0:
+            return []
         return self.data_schema.load(self.json_source.data, many=True)
 
     def validate_fields(self, fields):
