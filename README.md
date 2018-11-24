@@ -1,4 +1,4 @@
-# Treehouse Techdegree Project 3:
+# Treehouse Techdegree Project 3
 ### CLI Work Log
 
 ## Requirements:
