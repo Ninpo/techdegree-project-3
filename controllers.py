@@ -82,7 +82,9 @@ class TaskController:
             if not action_result:
                 return False
             if isinstance(action_result, dict):
-                action_result = self.edit_task(action_result['task'], action_result['error'])
+                action_result = self.edit_task(
+                    action_result["task"], action_result["error"]
+                )
                 continue
             elif action_result in ("back"):
                 return True
@@ -105,7 +107,9 @@ class TaskController:
     def date_range_search(self, view):
         start_date, end_date = view.date_range()
         try:
-            start_date_stamp = pendulum.from_format(start_date, "DD/MM/YYYY").timestamp()
+            start_date_stamp = pendulum.from_format(
+                start_date, "DD/MM/YYYY"
+            ).timestamp()
             end_date_stamp = pendulum.from_format(end_date, "DD/MM/YYYY").timestamp()
             if start_date_stamp > end_date_stamp:
                 raise ValueError("Start date must be earlier than end date!")
@@ -127,8 +131,7 @@ class TaskController:
             task
             for task in self.tasks
             if any(
-                match_text.lower() in str(val).lower()
-                for val in vars(task).values()
+                match_text.lower() in str(val).lower() for val in vars(task).values()
             )
         ]
         if result:
@@ -163,14 +166,16 @@ class TaskController:
             if len(task_changes["content"]) == 0:
                 task_changes["content"] = None
             try:
-                valid_data = self.data_repo.validate_fields({task_changes["field"]: task_changes["content"]})
+                valid_data = self.data_repo.validate_fields(
+                    {task_changes["field"]: task_changes["content"]}
+                )
             except ValidationError as err:
                 error = err
                 task_changes = self.render_view(edit_view, error=error)
                 continue
             setattr(task, task_changes["field"], valid_data[task_changes["field"]])
             self.data_repo.save_changes(self.tasks)
-            print("Task {} edited.".format(task_changes['field']))
+            print("Task {} edited.".format(task_changes["field"]))
             task_changes = self.render_view(edit_view, error=error)
         return "back"
 
