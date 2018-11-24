@@ -1,5 +1,5 @@
-# techdegree-project-3
-Work Log
+# Treehouse Techdegree Project 3:
+### CLI Work Log
 
 ## Requirements:
 - Python 3.6+
