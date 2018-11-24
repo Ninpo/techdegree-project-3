@@ -1,4 +1,4 @@
-marshmallow==2.16.3
+marshmallow==3.0.0b20
 pendulum==2.0.4
 python-dateutil==2.7.5
 pytzdata==2018.7
