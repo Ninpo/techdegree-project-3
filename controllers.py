@@ -59,11 +59,7 @@ class TaskController:
         if user_choice == "e":
             return search_methods[user_choice]()
         else:
-            try:
-                search_result = search_methods[user_choice](search_view)
-            except AttributeError:
-                print("Empty data set, unable to search.")
-                return self.start()
+            search_result = search_methods[user_choice](search_view)
         while not search_result:
             user_choice = self.render_view(search_view, error="No results found")
             if user_choice == "e":
