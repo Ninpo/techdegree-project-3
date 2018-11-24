@@ -16,7 +16,11 @@ class TaskController:
 
     def __init__(self, data_repo):
         self.data_repo = data_repo
-        self.tasks = self.data_repo.get_records()
+        try:
+            self.tasks = self.data_repo.get_records()
+        except ValidationError as err:
+            print("Problem with source data: {}".format(err))
+            exit(1)
 
     def render_view(self, view, confirmation=False, error=None):
         """Call current view's print to screen method, passing in any confirmation or error messages.
