@@ -13,6 +13,7 @@ class View:
     Attributes:
         prompt (str): User input prompt prefix.
     """
+
     def __init__(self, layout, choices, prompt):
         self._layout = layout
         self.choices = choices
@@ -29,7 +30,9 @@ class View:
             error (str): Error message for invalid choice.
         """
         if choice not in self.choices:
-            error = "Invalid Choice please choose from {}".format(", ".join(self.choices))
+            error = "Invalid Choice please choose from {}".format(
+                ", ".join(self.choices)
+            )
             return error
         return choice
 
@@ -68,6 +71,7 @@ class MainView(View):
     Attributes:
         prompt (str): User input prompt prefix.
     """
+
     def __init__(self, choices):
         self._layout = """WORKLOG
         What would you like to do?
@@ -83,6 +87,7 @@ class MainView(View):
 
 class NewTaskView(View):
     """View presented when adding a new task."""
+
     def __init__(self):
         self._layout = """NEW TASK
         """
@@ -123,6 +128,7 @@ class SearchView(View):
     Args:
         choices (:obj:`dict`): Key mappings for layout.
     """
+
     def __init__(self, choices):
         self._layout = """SEARCH
         Choose your search method:
@@ -183,6 +189,7 @@ class ResultView(View):
     Args:
         result (:obj:`list` of :obj:`Task`): Result from successful search query.
     """
+
     def __init__(self, result):
         self.result = result
         self._layout = """RESULT
@@ -286,6 +293,7 @@ class EditView(View):
     Args:
         task (:obj:`Task`): Specific task to modify.
     """
+
     def __init__(self, task):
         self.task = task
         self._layout = """EDIT
@@ -345,7 +353,7 @@ class EditView(View):
             (:obj:`dict` of {`str`:`str`}): Updated field content.
         """
         new_date = input("Enter the new date (DD/MM/YYYY): ")
-        return {'field': 'date', 'content': new_date}
+        return {"field": "date", "content": new_date}
 
     def edit_title(self):
         """Collect new title.
@@ -354,7 +362,7 @@ class EditView(View):
            (:obj:`dict` of {`str`:`str`}): Updated field content.
         """
         new_title = input("Enter your new title: ")
-        return {'field': 'title', 'content': new_title}
+        return {"field": "title", "content": new_title}
 
     def edit_time(self):
         """Collect new time_spent.
@@ -363,7 +371,7 @@ class EditView(View):
             (:obj:`dict` of {`str`:`str`}): Updated field content.
         """
         new_time = input("Enter new time in rounded minutes: ")
-        return {'field': 'time_spent', 'content': new_time}
+        return {"field": "time_spent", "content": new_time}
 
     def edit_notes(self):
         """Collect new notes.
@@ -372,7 +380,7 @@ class EditView(View):
             (:obj:`dict` of {`str`:`str`}): Updated field content.
         """
         new_notes = input("Enter your updated notes: ")
-        return {'field': 'notes', 'content': new_notes}
+        return {"field": "notes", "content": new_notes}
 
     def go_back(self):
         return None
