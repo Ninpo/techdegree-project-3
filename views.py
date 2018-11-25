@@ -1,6 +1,4 @@
-"""Views for task management
-"""
-
+import pendulum
 
 class View:
     """View base class.
@@ -134,6 +132,7 @@ class SearchView(View):
         Choose your search method:
         {}) Exact Date
         {}) Range of Dates
+        {}) Time Spent
         {}) Exact Text Search
         {}) Regex Pattern
         {}) Return to menu"""
@@ -163,6 +162,15 @@ class SearchView(View):
         start_date = input("Enter a start date in the format DD/MM/YYYY> ")
         end_date = input("Enter an end date in the format DD/MM/YYYY> ")
         return start_date, end_date
+
+    def time_spent_lookup(self):
+        """Collects input intended for a search by time spent.
+
+        Returns:
+            (str): User inputted number.
+        """
+        time_search = input("Enter the duration to search for (minutes): ")
+        return time_search
 
     def exact_match(self):
         """Collects input intended for a fixed text search.
