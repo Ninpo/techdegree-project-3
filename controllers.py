@@ -85,19 +85,20 @@ class TaskController:
         search_methods = {
             "a": self.date_search,
             "b": self.date_range_search,
-            "c": self.text_search,
-            "d": self.regex_search,
-            "e": self.start,
+            "c": self.time_search,
+            "d": self.text_search,
+            "e": self.regex_search,
+            "f": self.start,
         }
         search_view = views.SearchView(search_methods)
         user_choice = self.render_view(search_view)
-        if user_choice == "e":
+        if user_choice == "f":
             return search_methods[user_choice]()
         else:
             search_result = search_methods[user_choice](search_view)
         while not search_result:
             user_choice = self.render_view(search_view, error="No results found")
-            if user_choice == "e":
+            if user_choice == "f":
                 return search_methods[user_choice]()
             search_result = search_methods[user_choice](search_view)
         editing = True
@@ -135,6 +136,18 @@ class TaskController:
                 edit_confirmed = True
         return edit_confirmed
 
+    def sort_result(self, results, field):
+        """Sort search results by given Task attribute
+
+        Args:
+            results (:obj:`list` of :obj:`Task`): Tasks matching given search criteria
+            field (str): Name of Task attribute to sort by.
+
+        Returns:
+            (:obj:`list` of :obj:`Task:): List of Task objects sorted by attribute.
+        """
+        return sorted(results, key=lambda x: getattr(x, field))
+
     def date_search(self, view):
         """Present view for date search parameter input.
 
@@ -154,7 +167,7 @@ class TaskController:
             return None
         result = [task for task in self.tasks if task.date.timestamp() == date_stamp]
         if result:
-            return result
+            return self.sort_result(result, 'date')
         return None
 
     def date_range_search(self, view):
@@ -187,7 +200,27 @@ class TaskController:
             if start_date_stamp <= task.date.timestamp() <= end_date_stamp
         ]
         if result:
-            return result
+            return self.sort_result(result, 'date')
+        return None
+
+    def time_search(self, view):
+        """Present view for time spent search.
+
+        Args:
+            view (:obj:`View): View instance
+
+        Returns:
+            result (:obj:`list` of :obj:`Task`): Task objects matching search criteria
+            None: If negative search result.
+        """
+        time_value = view.time_spent_lookup()
+        try:
+            result = [task for task in self.tasks if task.time_spent == int(time_value)]
+        except ValueError:
+            print("Please enter correct time value in whole minutes.")
+            return None
+        if result:
+            return self.sort_result(result, 'date')
         return None
 
     def text_search(self, view):
@@ -209,7 +242,7 @@ class TaskController:
             )
         ]
         if result:
-            return result
+            return self.sort_result(result, 'date')
         return None
 
     def regex_search(self, view):
@@ -239,7 +272,7 @@ class TaskController:
                 )
             ]
         if result:
-            return result
+            return self.sort_result(result, 'date')
         return None
 
     def edit_task(self, task, error=None):
