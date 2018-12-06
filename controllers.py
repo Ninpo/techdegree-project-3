@@ -161,7 +161,7 @@ class TaskController:
         """
         date = view.exact_date()
         try:
-            date_stamp = pendulum.from_format(date, "DD/MM/YYYY").timestamp()
+            date_stamp = pendulum.from_format(date, "DD/MM/YYYY").naive().timestamp()
         except ValueError as err:
             print("\n{}".format(err))
             return None
